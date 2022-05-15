@@ -41,7 +41,7 @@ namespace ConverterWorkshop
                 {
                     furnace.IsReady = false;
                     furnace.Work(Resources);
-                    Console.WriteLine($"Чугун={Resources.Iron}, Печи={furnace.IronAmount} ");
+                    Console.WriteLine($"Чугун: {Resources.Iron}, Печи: {furnace.IronAmount}");
                 }
 
             while (Resources.Iron > 0)
@@ -60,7 +60,7 @@ namespace ConverterWorkshop
             }
 
             timer.Stop();
-            Console.WriteLine($"Время: {timer.ElapsedMilliseconds}, слабы: {Resources.Slabs}");
+            Console.WriteLine($"\nВремя: {timer.ElapsedMilliseconds}, слябы: {Resources.Slabs}");
         }
 
         private static int GetWorkTime()
@@ -71,15 +71,16 @@ namespace ConverterWorkshop
         private static void TryActiveFreeUNRS(IEnumerable<UNRS> UNRSs)
         {
             var readyUNRSs = UNRSs
-                .Where(x => x.IsReady)
-                .Select((x, i) => (x, i)).ToList();
+                .Select((x, i) => Tuple.Create(x, i))
+                .Where(x => x.Item1.IsReady)
+                .ToList();
 
             if (readyUNRSs.Count == 0)
                 return;
 
             var (UNRS, index) = readyUNRSs.First();
 
-            Console.WriteLine($"УНРС {index} активна");
+            Console.WriteLine($"УНРС {index + 1} активна");
             Ladle.IsDone = false;
             Ladle.IsReady = true;
             UNRS.Work(Resources);
