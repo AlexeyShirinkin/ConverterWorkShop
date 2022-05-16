@@ -6,22 +6,21 @@ namespace ConverterWorkshop
     public class Ladle
     {
         public bool IsReady { get; set; } = true; // Готовность ковша принять сталь
-        public bool IsDone { get; set; } // Ковш выполнил работу
 
-        public void Work(int timeWork)
+        public void Work(UNRS unrs, Resources resources)
         {
             IsReady = false;
 
-            var timer = new Timer(timeWork)
+            new Timer(90 + new Random().Next(-30, 30) + new Random().Next(-10, 10))
             {
                 AutoReset = false,
                 Enabled = true
-            };
-
-            timer.Elapsed += (_, _) =>
+            }.Elapsed += (_, _) =>
             {
-                IsDone = true;
+                IsReady = true;
+                unrs.Work(resources);
                 Console.WriteLine("Ковш выполнил работу");
+                Console.WriteLine($"УНРС {unrs.ID} активна");
             };
         }
     }

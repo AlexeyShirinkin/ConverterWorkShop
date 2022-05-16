@@ -13,18 +13,18 @@ namespace ConverterWorkshop
 
         private static ConverterFurnace[] Furnaces { get; } =
         {
-            new(370 + Random.Next(-50, 50), 280),
-            new(340 + Random.Next(-50, 50), 250),
-            new(430 + Random.Next(-50, 50), 310)
+            new(370, 280),
+            new(340, 250),
+            new(430, 310)
         };
 
         private static UNRS[] UNRSs { get; } =
         {
-            new(GetWorkTime()),
-            new(GetWorkTime()),
-            new(GetWorkTime()),
-            new(GetWorkTime()),
-            new(GetWorkTime())
+            new(710, 1),
+            new(710, 2),
+            new(710, 3),
+            new(710, 4),
+            new(710, 5)
         };
 
         public static void Main()
@@ -35,55 +35,41 @@ namespace ConverterWorkshop
         private static void StartProcess()
         {
             var timer = Stopwatch.StartNew();
-
-            foreach (var furnace in Furnaces)
-                if (furnace.IsReady)
-                {
-                    furnace.IsReady = false;
-                    furnace.Work(Resources);
-                    Console.WriteLine($"Чугун: {Resources.Iron}, Печи: {furnace.IronAmount}");
-                }
-
-            while (Resources.Iron > 0)
+            do
             {
                 foreach (var furnace in Furnaces)
-                    if (furnace.IsReady && Ladle.IsReady)
+                {
+                    if (furnace.IsEmpty && Resources.Iron > furnace.IronAmount)
                     {
                         furnace.Work(Resources);
-                        if (!Ladle.IsDone)
-                            Ladle.Work(50 + Random.Next(-30, 30));
-                        Console.WriteLine($"Чугун: {Resources.Iron}, Печи: {furnace.IronAmount}");
+                        Console.WriteLine($"Чугун: {Resources.Iron}, загружено в печь: {furnace.IronAmount}");
                     }
 
-                if (Ladle.IsDone)
-                    TryActiveFreeUNRS(UNRSs);
-            }
-
-            timer.Stop();
+                    if (furnace.IsReady && Ladle.IsReady)
+                    {
+                        TryActiveFreeUNRS(UNRSs, furnace);
+                    }
+                }
+                if (Furnaces.All(f => f.IsEmpty))
+                    timer.Stop();
+            } while (Furnaces.Any(f => !f.IsEmpty) || UNRSs.Any(u => !u.IsReady));
+            
             Console.WriteLine($"\nВремя: {timer.ElapsedMilliseconds}, слябы: {Resources.Slabs}");
         }
 
-        private static int GetWorkTime()
+        private static void TryActiveFreeUNRS(IEnumerable<UNRS> UNRSs, ConverterFurnace furnace)
         {
-            return 710 + Random.Next(-100, 100) + 40 + Random.Next(-10, 10);
-        }
+            var readyUNRS = UNRSs
+                .Where(unrs => unrs.IsReady)
+                .ToList().FirstOrDefault();
 
-        private static void TryActiveFreeUNRS(IEnumerable<UNRS> UNRSs)
-        {
-            var readyUNRSs = UNRSs
-                .Select((x, i) => Tuple.Create(x, i))
-                .Where(x => x.Item1.IsReady)
-                .ToList();
-
-            if (readyUNRSs.Count == 0)
+            if (readyUNRS == null)
                 return;
-
-            var (UNRS, index) = readyUNRSs.First();
-
-            Console.WriteLine($"УНРС {index + 1} активна");
-            Ladle.IsDone = false;
-            Ladle.IsReady = true;
-            UNRS.Work(Resources);
+            Ladle.Work(readyUNRS, Resources);
+            furnace.IsEmpty = true;
+            furnace.IsReady = false;
+            
+            Console.WriteLine($"Чугун: {Resources.Iron}, взят из печи: {furnace.IronAmount}");
         }
     }
 }
