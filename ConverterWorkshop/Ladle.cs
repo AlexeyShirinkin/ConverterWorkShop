@@ -10,6 +10,7 @@ namespace ConverterWorkshop
         public void Work(UNRS unrs, Resources resources)
         {
             IsReady = false;
+            unrs.IsReady = false;
 
             new Timer(90 + new Random().Next(-30, 30) + new Random().Next(-10, 10))
             {

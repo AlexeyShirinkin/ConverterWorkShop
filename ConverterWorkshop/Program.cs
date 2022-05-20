@@ -50,18 +50,20 @@ namespace ConverterWorkshop
                         TryActiveFreeUNRS(UNRSs, furnace);
                     }
                 }
-                if (Furnaces.All(f => f.IsEmpty))
+                if (Furnaces.All(f => Resources.Iron < f.IronAmount))
                     timer.Stop();
             } while (Furnaces.Any(f => !f.IsEmpty) || UNRSs.Any(u => !u.IsReady));
             
             Console.WriteLine($"\nВремя: {timer.ElapsedMilliseconds}, слябы: {Resources.Slabs}");
+            foreach (var unrS in UNRSs)
+            {
+                Console.WriteLine($"\nВремя простоя УНРС {unrS.ID}: {unrS.chillTimer.ElapsedMilliseconds}");
+            }
         }
 
         private static void TryActiveFreeUNRS(IEnumerable<UNRS> UNRSs, ConverterFurnace furnace)
         {
-            var readyUNRS = UNRSs
-                .Where(unrs => unrs.IsReady)
-                .ToList().FirstOrDefault();
+            var readyUNRS = UNRSs.FirstOrDefault(unrs => unrs.IsReady);
 
             if (readyUNRS == null)
                 return;
